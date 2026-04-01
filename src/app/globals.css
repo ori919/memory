@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --muted: #78716c;
+  --card: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-manrope);
+  --font-serif: var(--font-lora);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+@keyframes memory-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes memory-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes memory-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memory-fade-up {
+  animation: memory-fade-up 0.75s ease-out forwards;
+}
+
+.memory-fade-in {
+  animation: memory-fade-in 0.5s ease-out forwards;
+}
+
+.memory-pop {
+  animation: memory-pop 0.35s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-fade-up,
+  .memory-fade-in,
+  .memory-pop {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes voicebar {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.voice-bar {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: bottom center;
+  animation: voicebar 0.8s ease infinite;
+}
+
+.voice-bar-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.voice-bar-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.voice-bar-delay-3 {
+  animation-delay: 0.3s;
 }

@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Memory
 
-## Getting Started
+A quiet Next.js app for remembering someone you love — Claude for voice, ElevenLabs for speech, and client-side session storage for privacy.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local
+# Add ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, NEXT_PUBLIC_APP_URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | Claude via `/api/chat` (server only) |
+| `ELEVENLABS_API_KEY` | TTS + voice clone (server only) |
+| `NEXT_PUBLIC_APP_URL` | Optional app URL for links |
+| `ANTHROPIC_MODEL` | Optional override (default: `claude-sonnet-4-20250514`) |
 
-## Learn More
+For Cloudflare Wrangler local dev, copy keys into `.dev.vars` (gitignored).
 
-To learn more about Next.js, take a look at the following resources:
+## Deployed on Cloudflare Pages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This repo includes `wrangler.toml` and `npm run deploy` (`next build` then `wrangler pages deploy .next`). Next.js 16 may require a Cloudflare adapter (for example `@cloudflare/next-on-pages` or `@opennextjs/cloudflare`) when your Next major version matches the adapter’s peer range; align versions per [Cloudflare Pages + Next.js](https://developers.cloudflare.com/pages/framework-guides/nextjs/) before shipping the hackathon build.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**API routes run as Cloudflare Workers** when deployed on Pages. Conversation state is **persisted client-side** with `sessionStorage`.
 
-## Deploy on Vercel
+## Health
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`GET /api/health` returns `{ status: "ok", worker: true, timestamp }` for demos and judges.
