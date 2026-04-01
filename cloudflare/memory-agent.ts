@@ -3,7 +3,7 @@
  */
 import { DurableObject } from "cloudflare:workers";
 import type { Ai } from "@cloudflare/workers-types";
-import { generateReply, generateReplyAsync } from "./agent-reply";
+import { generateReplyAsync } from "./agent-reply";
 import type { ChatTurn } from "./agent-reply";
 
 export interface MemoryAgentEnv {

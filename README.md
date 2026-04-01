@@ -47,3 +47,13 @@ This project uses [OpenNext for Cloudflare](https://opennext.js.org/cloudflare/g
 - **Full local pipeline:** `npm run deploy` (build + deploy).
 
 The **Durable Object** API is a separate Worker: `npm run worker:deploy` (`cloudflare/wrangler.worker.toml`). Enable **Workers AI** for your account so the `AI` binding works in production.
+
+## Verification
+
+Before a release or after changing Cloudflare config:
+
+```bash
+npm run verify
+```
+
+This runs **ESLint**, deletes `.open-next` (avoids stale bundle issues on some systems), **OpenNext build**, then **dry-run deploy** for the Next Worker (`wrangler.jsonc`) and for the DO Worker (`cloudflare/wrangler.worker.toml`). If a local build fails with `ENOTEMPTY` under `.open-next`, run `npm run clean:opennext` and build again.

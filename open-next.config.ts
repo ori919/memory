@@ -8,8 +8,9 @@ const cloudflare = defineCloudflareConfig({
 	// incrementalCache: r2IncrementalCache
 });
 
-/** `npm run build` is `opennextjs-cloudflare build`; inner Next step must be `next build` (not `npm run build`) to avoid recursion. */
-export default {
+/** `npm run build` is `opennextjs-cloudflare build`; inner step is `next build` (not `npm run build`) to avoid recursion. */
+const openNextConfig = {
 	...cloudflare,
 	buildCommand: "next build",
 };
+export default openNextConfig;
