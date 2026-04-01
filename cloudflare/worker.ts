@@ -2,10 +2,12 @@
  * Cloudflare Worker entry — routes each memoryId to its Durable Object agent.
  * Deploy: npm run worker:deploy
  */
+import type { Ai } from "@cloudflare/workers-types";
 import { MemoryAgent } from "./memory-agent";
 
 export interface Env {
   MEMORY_AGENT: DurableObjectNamespace<MemoryAgent>;
+  AI: Ai;
 }
 
 export { MemoryAgent };

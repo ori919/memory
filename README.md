@@ -17,8 +17,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **`cloudflare/memory-agent.ts`** — `MemoryAgent extends DurableObject`: stores name, personality, and rolling chat history in `ctx.storage` (survives restarts).
 - **`cloudflare/worker.ts`** — routes `POST /api/chat` and `POST /api/memory` to `env.MEMORY_AGENT.idFromName(memoryId)` so **one DO instance per memory**.
-- **`cloudflare/agent-reply.ts`** — `generateReply(message, personality, history, name)` (mock; swap for Workers AI / remote LLM).
-- Deploy Worker: `npm run worker:deploy` (uses `cloudflare/wrangler.worker.toml`).
+- **`cloudflare/agent-reply.ts`** — `generateReplyAsync` uses **Workers AI** (`@cf/meta/llama-3.1-8b-instruct`) when the `AI` binding is present; falls back to the same heuristics as `generateReply` on failure or for `__INIT__`.
+- Deploy Worker: `npm run worker:deploy` (uses `cloudflare/wrangler.worker.toml` with `[ai]` binding).
 
 ### Next.js proxy
 
@@ -42,7 +42,8 @@ When **`CLOUDFLARE_WORKER_URL`** is set (server-side), `src/app/api/chat` and `s
 
 This project uses [OpenNext for Cloudflare](https://opennext.js.org/cloudflare/get-started): root `wrangler.jsonc` sets `main` to `.open-next/worker.js` and static assets under `.open-next/assets`.
 
-- **Build + deploy:** `npm run deploy` (runs `opennextjs-cloudflare build` then `opennextjs-cloudflare deploy`).
-- In **Cloudflare Pages** (or CI), use that command for the deploy step — **not** bare `npx wrangler deploy`, which expects a Worker entry or `--assets` and does not match this layout.
+- **`npm run build`** runs `opennextjs-cloudflare build`. The inner Next step is **`next build`** (set in `open-next.config.ts` as `buildCommand`) so OpenNext does not recurse into `npm run build`.
+- **After a successful build**, deploy with `npx wrangler deploy` or `opennextjs-cloudflare deploy` (Wrangler detects OpenNext and forwards). In **Pages / CI**, run **`npm run build`** first, then the deploy step — otherwise you get “Could not find compiled Open Next config”.
+- **Full local pipeline:** `npm run deploy` (build + deploy).
 
-The **Durable Object** API is a separate Worker: `npm run worker:deploy` (`cloudflare/wrangler.worker.toml`).
+The **Durable Object** API is a separate Worker: `npm run worker:deploy` (`cloudflare/wrangler.worker.toml`). Enable **Workers AI** for your account so the `AI` binding works in production.

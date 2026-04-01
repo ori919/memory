@@ -1,8 +1,75 @@
 /**
- * Agent “brain” — Workers AI / remote LLM can replace this function later.
- * Context-aware using recent history + personality text.
+ * Agent “brain”: Workers AI (Llama 3.1) when `AI` binding is available, else heuristics.
  */
+import type { Ai } from "@cloudflare/workers-types";
+
 export type ChatTurn = { role: "user" | "assistant"; content: string };
+
+const WORKERS_AI_MODEL = "@cf/meta/llama-3.1-8b-instruct" as const;
+
+/**
+ * Primary reply path for chat — uses Workers AI on the edge when `ai` is passed.
+ */
+export async function generateReplyAsync(
+  ai: Ai | undefined,
+  message: string,
+  personality: string,
+  history: ChatTurn[],
+  name: string
+): Promise<string> {
+  if (!ai) {
+    return generateReply(message, personality, history, name);
+  }
+
+  const text = message.trim();
+  if (text === "__INIT__" || !text) {
+    return generateReply(message, personality, history, name);
+  }
+
+  try {
+    const system = [
+      `You are ${name}, speaking in first person to someone who cares about you.`,
+      `Stay in character. Personality and context: ${personality.slice(0, 2400)}`,
+      `Be warm and concise (2–6 short sentences). Never break character or say you are an AI or a model.`,
+    ].join(" ");
+
+    const recent = history
+      .slice(-14)
+      .map((h) => `${h.role === "user" ? "Them" : name}: ${h.content}`)
+      .join("\n");
+
+    const userContent = recent
+      ? `Recent conversation:\n${recent}\n\nThey just said: ${text}`
+      : text;
+
+    const out = await ai.run(WORKERS_AI_MODEL, {
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: userContent },
+      ],
+      max_tokens: 512,
+    });
+
+    const reply = extractWorkersAiText(out);
+    if (reply?.trim()) {
+      return reply.trim();
+    }
+  } catch {
+    // fall through to heuristics
+  }
+
+  return generateReply(message, personality, history, name);
+}
+
+function extractWorkersAiText(out: unknown): string | undefined {
+  if (typeof out !== "object" || out === null) {
+    return undefined;
+  }
+  if ("response" in out && typeof (out as { response: unknown }).response === "string") {
+    return (out as { response: string }).response;
+  }
+  return undefined;
+}
 
 export function generateReply(
   message: string,

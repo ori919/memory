@@ -2,8 +2,13 @@
  * One Durable Object = one persistent Memory agent (personality + history).
  */
 import { DurableObject } from "cloudflare:workers";
-import { generateReply } from "./agent-reply";
+import type { Ai } from "@cloudflare/workers-types";
+import { generateReply, generateReplyAsync } from "./agent-reply";
 import type { ChatTurn } from "./agent-reply";
+
+export interface MemoryAgentEnv {
+  AI: Ai;
+}
 
 const STATE_KEY = "v1";
 const MAX_HISTORY = 80;
@@ -17,7 +22,7 @@ export type AgentPersistedState = {
   history: ChatTurn[];
 };
 
-export class MemoryAgent extends DurableObject {
+export class MemoryAgent extends DurableObject<MemoryAgentEnv> {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
@@ -88,7 +93,8 @@ export class MemoryAgent extends DurableObject {
     const stream = url.searchParams.get("stream") === "1";
 
     if (message === "__INIT__") {
-      const reply = generateReply(
+      const reply = await generateReplyAsync(
+        this.env.AI,
         "__INIT__",
         state.personality,
         state.history,
@@ -107,7 +113,8 @@ export class MemoryAgent extends DurableObject {
     }
 
     state.history.push({ role: "user", content: message });
-    const reply = generateReply(
+    const reply = await generateReplyAsync(
+      this.env.AI,
       message,
       state.personality,
       state.history,
