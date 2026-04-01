@@ -1,35 +1,48 @@
 # Memory
 
-A quiet Next.js app for remembering someone you love — Claude for voice, ElevenLabs for speech, and client-side session storage for privacy.
+A quiet Next.js app for remembering someone you love — each **Memory** can be backed by a **Cloudflare Durable Object** agent (persistent personality + chat history on the edge). Voice uses ElevenLabs via `/api/speak` when configured; the UI keeps session copy in `sessionStorage`.
 
 ## Getting started
 
 ```bash
 npm install
 cp .env.example .env.local
-# Add ANTHROPIC_API_KEY, ELEVENLABS_API_KEY, NEXT_PUBLIC_APP_URL
+# Add ELEVENLABS_API_KEY (TTS / clone), optional CLOUDFLARE_WORKER_URL
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Environment
+## Cloudflare AI agents (Durable Objects)
+
+- **`cloudflare/memory-agent.ts`** — `MemoryAgent extends DurableObject`: stores name, personality, and rolling chat history in `ctx.storage` (survives restarts).
+- **`cloudflare/worker.ts`** — routes `POST /api/chat` and `POST /api/memory` to `env.MEMORY_AGENT.idFromName(memoryId)` so **one DO instance per memory**.
+- **`cloudflare/agent-reply.ts`** — `generateReply(message, personality, history, name)` (mock; swap for Workers AI / remote LLM).
+- Deploy Worker: `npm run worker:deploy` (uses `cloudflare/wrangler.worker.toml`).
+
+### Next.js proxy
+
+When **`CLOUDFLARE_WORKER_URL`** is set (server-side), `src/app/api/chat` and `src/app/api/memory` **forward** the same JSON to your deployed Worker so local Next talks to real DOs. The browser can keep calling same-origin `/api/*`.
+
+### Environment
 
 | Variable | Purpose |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | Claude via `/api/chat` (server only) |
-| `ELEVENLABS_API_KEY` | TTS + voice clone (server only) |
+| `ELEVENLABS_API_KEY` | TTS + voice clone (`/api/speak`, `/api/clone-voice`) |
+| `CLOUDFLARE_WORKER_URL` | Deployed Worker origin for API proxy (no trailing slash) |
+| `NEXT_PUBLIC_WORKER_URL` | Optional: browser calls Worker directly for `/api/chat` / `/api/memory` |
 | `NEXT_PUBLIC_APP_URL` | Optional app URL for links |
-| `ANTHROPIC_MODEL` | Optional override (default: `claude-sonnet-4-20250514`) |
-
-For Cloudflare Wrangler local dev, copy keys into `.dev.vars` (gitignored).
-
-## Deployed on Cloudflare Pages
-
-This repo includes `wrangler.toml` and `npm run deploy` (`next build` then `wrangler pages deploy .next`). Next.js 16 may require a Cloudflare adapter (for example `@cloudflare/next-on-pages` or `@opennextjs/cloudflare`) when your Next major version matches the adapter’s peer range; align versions per [Cloudflare Pages + Next.js](https://developers.cloudflare.com/pages/framework-guides/nextjs/) before shipping the hackathon build.
-
-**API routes run as Cloudflare Workers** when deployed on Pages. Conversation state is **persisted client-side** with `sessionStorage`.
 
 ## Health
 
-`GET /api/health` returns `{ status: "ok", worker: true, timestamp }` for demos and judges.
+- Next: `GET /api/health`
+- Worker: `GET /api/health` on the Worker origin (see `cloudflare/worker.ts`)
+
+## Cloudflare deploy (Next app)
+
+This project uses [OpenNext for Cloudflare](https://opennext.js.org/cloudflare/get-started): root `wrangler.jsonc` sets `main` to `.open-next/worker.js` and static assets under `.open-next/assets`.
+
+- **Build + deploy:** `npm run deploy` (runs `opennextjs-cloudflare build` then `opennextjs-cloudflare deploy`).
+- In **Cloudflare Pages** (or CI), use that command for the deploy step — **not** bare `npx wrangler deploy`, which expects a Worker entry or `--assets` and does not match this layout.
+
+The **Durable Object** API is a separate Worker: `npm run worker:deploy` (`cloudflare/wrangler.worker.toml`).

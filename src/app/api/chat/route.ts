@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
 import { generateAiReply } from "@/lib/ai";
 import { getMemory } from "@/lib/memory/store";
-
-export const runtime = "edge";
+import { proxyJsonToWorker } from "@/lib/workerProxy";
 
 type Body = {
   message?: string;
@@ -10,9 +9,19 @@ type Body = {
 };
 
 export async function POST(req: NextRequest) {
+  const rawText = await req.text();
+
+  const proxied = await proxyJsonToWorker("/api/chat", rawText);
+  if (proxied) {
+    return new Response(proxied.body, {
+      status: proxied.status,
+      headers: proxied.headers,
+    });
+  }
+
   let body: Body;
   try {
-    body = (await req.json()) as Body;
+    body = JSON.parse(rawText) as Body;
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
       status: 400,

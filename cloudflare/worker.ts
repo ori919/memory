@@ -1,37 +1,14 @@
 /**
- * Cloudflare Worker: edge API + optional R2 binding.
- * Deploy: npx wrangler deploy -c cloudflare/wrangler.worker.toml
+ * Cloudflare Worker entry — routes each memoryId to its Durable Object agent.
+ * Deploy: npm run worker:deploy
  */
-import { generateAiReply } from "./ai";
-import type { MemoryRecord } from "./types";
+import { MemoryAgent } from "./memory-agent";
 
 export interface Env {
-  /** Bind in wrangler.toml: [[r2_buckets]] binding = "MEMORY_BUCKET" */
-  MEMORY_BUCKET?: R2Bucket;
+  MEMORY_AGENT: DurableObjectNamespace<MemoryAgent>;
 }
 
-const mock = new Map<string, MemoryRecord>();
-
-async function readMemory(env: Env, id: string): Promise<MemoryRecord | null> {
-  if (env.MEMORY_BUCKET) {
-    const key = `memories/${id}.json`;
-    const obj = await env.MEMORY_BUCKET.get(key);
-    if (!obj) return null;
-    return JSON.parse(await obj.text()) as MemoryRecord;
-  }
-  return mock.get(id) ?? null;
-}
-
-async function writeMemory(env: Env, data: MemoryRecord): Promise<void> {
-  if (env.MEMORY_BUCKET) {
-    const key = `memories/${data.id}.json`;
-    await env.MEMORY_BUCKET.put(key, JSON.stringify(data), {
-      httpMetadata: { contentType: "application/json" },
-    });
-    return;
-  }
-  mock.set(data.id, data);
-}
+export { MemoryAgent };
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -40,7 +17,7 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-const handler = {
+const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
@@ -54,51 +31,54 @@ const handler = {
       });
     }
 
-    if (request.method === "POST" && url.pathname === "/api/memory") {
-      let body: MemoryRecord;
+    if (
+      request.method === "POST" &&
+      (url.pathname === "/api/chat" || url.pathname === "/api/memory")
+    ) {
+      const bodyText = await request.text();
+      let memoryId = "";
       try {
-        body = (await request.json()) as MemoryRecord;
+        const parsed = JSON.parse(bodyText) as {
+          memoryId?: string;
+          id?: string;
+        };
+        memoryId =
+          url.pathname === "/api/chat"
+            ? (parsed.memoryId ?? "")
+            : (parsed.id ?? "");
       } catch {
         return json({ error: "Invalid JSON" }, 400);
       }
-      if (!body?.id || typeof body.name !== "string") {
-        return json({ error: "id and name required" }, 400);
+
+      if (!memoryId) {
+        return json(
+          {
+            error:
+              url.pathname === "/api/chat"
+                ? "memoryId required"
+                : "id required",
+          },
+          400
+        );
       }
-      await writeMemory(env, {
-        id: body.id,
-        name: body.name,
-        personalityDescription: body.personalityDescription ?? "",
-        imageUrl: typeof body.imageUrl === "string" ? body.imageUrl : "",
-        relationship: body.relationship,
-        voiceId: body.voiceId,
-      });
-      return json({ ok: true });
+
+      const id = env.MEMORY_AGENT.idFromName(memoryId);
+      const stub = env.MEMORY_AGENT.get(id);
+      return stub.fetch(
+        new Request(request.url, {
+          method: request.method,
+          headers: request.headers,
+          body: bodyText,
+        })
+      );
     }
 
-    if (request.method === "POST" && url.pathname === "/api/chat") {
-      let body: { message?: string; memoryId?: string };
-      try {
-        body = (await request.json()) as { message?: string; memoryId?: string };
-      } catch {
-        return json({ error: "Invalid JSON" }, 400);
-      }
-      const message = typeof body.message === "string" ? body.message : "";
-      const memoryId = typeof body.memoryId === "string" ? body.memoryId : "";
-      if (!memoryId) {
-        return json({ error: "memoryId required" }, 400);
-      }
-      const memory = await readMemory(env, memoryId);
-      if (!memory) {
-        return json({ error: "Memory not found" }, 404);
-      }
-      const reply = generateAiReply(message, memory);
-      const res = json({ reply });
-      res.headers.set("access-control-allow-origin", "*");
-      return res;
+    if (request.method === "GET" && url.pathname === "/api/health") {
+      return json({ status: "ok", worker: true, timestamp: Date.now() });
     }
 
     return new Response("Not found", { status: 404 });
   },
 };
 
-export default handler;
+export default worker;

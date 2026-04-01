@@ -42,6 +42,11 @@ export async function playVoice(text: string, voiceId: string): Promise<void> {
   return speakText(text, voiceId);
 }
 
+/** Alias for agent / product copy */
+export async function speak(text: string, voiceId: string): Promise<void> {
+  return playVoice(text, voiceId);
+}
+
 /** Structured hook for future SDK */
 export const elevenLabs = {
   async generateVoice(text: string, voiceId: string): Promise<void> {

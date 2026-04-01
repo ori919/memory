@@ -1,13 +1,22 @@
 import { NextRequest } from "next/server";
 import type { MemoryRecord } from "@/lib/memory/types";
 import { saveMemory } from "@/lib/memory/store";
-
-export const runtime = "edge";
+import { proxyJsonToWorker } from "@/lib/workerProxy";
 
 export async function POST(req: NextRequest) {
+  const rawText = await req.text();
+
+  const proxied = await proxyJsonToWorker("/api/memory", rawText);
+  if (proxied) {
+    return new Response(proxied.body, {
+      status: proxied.status,
+      headers: proxied.headers,
+    });
+  }
+
   let body: MemoryRecord;
   try {
-    body = (await req.json()) as MemoryRecord;
+    body = JSON.parse(rawText) as MemoryRecord;
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
       status: 400,
