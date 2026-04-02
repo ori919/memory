@@ -177,7 +177,7 @@ export function ChatView() {
             href="/"
             className="text-sm text-stone-500 transition hover:text-stone-800"
           >
-            ← Back
+            ← Home
           </Link>
           <div className="flex min-w-0 flex-1 items-center gap-4">
             {profile.imageDataUrl ? (

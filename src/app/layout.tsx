@@ -18,7 +18,7 @@ const lora = Lora({
 export const metadata: Metadata = {
   title: "Memory — remember someone you love",
   description:
-    "A quiet space to talk with a gentle reflection of someone you miss.",
+    "A quiet space to create a gentle reflection of someone you miss — voice, story, and chat on Cloudflare.",
 };
 
 export default function RootLayout({

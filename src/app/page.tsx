@@ -1,5 +1,5 @@
-import { Onboarding } from "@/components/onboarding/Onboarding";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export default function Home() {
-  return <Onboarding />;
+  return <LandingPage />;
 }

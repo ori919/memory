@@ -11,11 +11,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## 60s promo video (Remotion)
-
-The folder [`memory-video/`](memory-video/) is a standalone [Remotion](https://www.remotion.dev/) project for a **60s** demo clip. Quick start: `cd memory-video && npm install && npm run dev` (preview), then `npm run render` for `out/memory-promo.mp4`. Details are in [`memory-video/README.md`](memory-video/README.md).
+Open [http://localhost:3000](http://localhost:3000) for the **landing page**; **Create** lives at `/create` (the memory form).
 
 ## Cloudflare AI agents (Durable Objects)
 
