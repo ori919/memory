@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Memory</title>
+    <meta
+      name="description"
+      content="Create a digital version of someone you love — keep the conversations going."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/landing.css" />
+  </head>
+  <body>
+    <div class="memory-canvas" aria-hidden="true">
+      <div class="memory-canvas__glow memory-canvas__glow--1"></div>
+      <div class="memory-canvas__glow memory-canvas__glow--2"></div>
+      <div class="memory-canvas__glow memory-canvas__glow--3"></div>
+      <div class="memory-canvas__grain"></div>
+      <div class="memory-canvas__vignette"></div>
+    </div>
+
+    <main id="main" class="memory-shell">
+      <header class="memory-hero" data-reveal>
+        <p class="memory-kicker">Memory</p>
+        <h1 class="memory-display memory-hero-title">
+          <span class="memory-hero-title__line">Talk to the people</span>
+          <span class="memory-hero-title__line memory-hero-title__line--accent">you miss.</span>
+        </h1>
+        <p class="memory-hero-lead">
+          Memory lets you create a digital version of someone you love — so you can keep the
+          conversations going.
+        </p>
+        <a class="memory-btn" href="/create" target="_top">
+          <span class="memory-btn__shine" aria-hidden="true"></span>
+          <span class="memory-btn__label">Create a Memory</span>
+        </a>
+      </header>
+
+      <section class="memory-section" aria-labelledby="moment-heading" data-reveal>
+        <div class="memory-section__head">
+          <span class="memory-eyebrow">The moment</span>
+          <h2 id="moment-heading" class="memory-section__title">There are things we never got to say.</h2>
+        </div>
+        <div class="memory-prose">
+          <p>Conversations that ended too soon.</p>
+          <p class="memory-prose__emphasis">Memory gives you a way to continue them.</p>
+        </div>
+      </section>
+
+      <section class="memory-section memory-section--steps" aria-labelledby="how-heading" data-reveal>
+        <div class="memory-section__head">
+          <span class="memory-eyebrow">How it works</span>
+          <h2 id="how-heading" class="memory-section__title">Three gentle steps.</h2>
+        </div>
+        <ol class="memory-step-grid">
+          <li class="memory-step-card">
+            <span class="memory-step-card__index" aria-hidden="true">01</span>
+            <h3 class="memory-step-card__title">Create a memory</h3>
+            <p class="memory-step-card__text">Upload a photo and describe who they were.</p>
+          </li>
+          <li class="memory-step-card">
+            <span class="memory-step-card__index" aria-hidden="true">02</span>
+            <h3 class="memory-step-card__title">Bring them to life</h3>
+            <p class="memory-step-card__text">We recreate their voice, tone, and personality.</p>
+          </li>
+          <li class="memory-step-card">
+            <span class="memory-step-card__index" aria-hidden="true">03</span>
+            <h3 class="memory-step-card__title">Start talking</h3>
+            <p class="memory-step-card__text">Have real conversations — anytime.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="memory-section" aria-labelledby="real-heading" data-reveal>
+        <div class="memory-section__head">
+          <span class="memory-eyebrow">What makes it real</span>
+          <h2 id="real-heading" class="memory-section__title">Presence, not performance.</h2>
+        </div>
+        <div class="memory-prose">
+          <p>
+            Each memory becomes a living AI agent — one that remembers you, understands you, and
+            responds like them.
+          </p>
+          <p class="memory-techline">Powered by Cloudflare and ElevenLabs.</p>
+        </div>
+      </section>
+
+      <section class="memory-quote" aria-labelledby="experience-heading" data-reveal>
+        <span class="memory-eyebrow memory-eyebrow--on-dark">Experience</span>
+        <blockquote class="memory-quote__body" id="experience-heading">
+          <p class="memory-quote__line">This isn’t just AI.</p>
+          <p class="memory-quote__line memory-quote__line--large">It’s a way to feel close again.</p>
+        </blockquote>
+      </section>
+
+      <section class="memory-section" aria-labelledby="trust-heading" data-reveal>
+        <div class="memory-trust-card">
+          <div class="memory-section__head memory-section__head--compact">
+            <span class="memory-eyebrow">Trust</span>
+            <h2 id="trust-heading" class="memory-section__title">Your story stays yours.</h2>
+          </div>
+          <ul class="memory-trust-list">
+            <li>
+              <span class="memory-trust-list__mark" aria-hidden="true"></span>
+              Your memories are private.
+            </li>
+            <li>
+              <span class="memory-trust-list__mark" aria-hidden="true"></span>
+              Stored securely.
+            </li>
+            <li>
+              <span class="memory-trust-list__mark" aria-hidden="true"></span>
+              Always yours.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="memory-cta" aria-labelledby="cta-heading" data-reveal>
+        <div class="memory-cta__inner">
+          <h2 id="cta-heading" class="memory-cta__title">Start your first conversation.</h2>
+          <a class="memory-btn memory-btn--large" href="/create" target="_top">
+            <span class="memory-btn__shine" aria-hidden="true"></span>
+            <span class="memory-btn__label">Create a Memory</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) {
+          document.querySelectorAll("[data-reveal]").forEach(function (el) {
+            el.classList.add("is-visible");
+          });
+          return;
+        }
+        var nodes = document.querySelectorAll("[data-reveal]");
+        if (!("IntersectionObserver" in window)) {
+          nodes.forEach(function (el) {
+            el.classList.add("is-visible");
+          });
+          return;
+        }
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.classList.add("is-visible");
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+        );
+        nodes.forEach(function (el) {
+          io.observe(el);
+        });
+      })();
+    </script>
+  </body>
+</html>

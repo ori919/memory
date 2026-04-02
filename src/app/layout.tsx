@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lora, Manrope } from "next/font/google";
+import { Inter, Lora, Manrope, Poppins } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
@@ -11,6 +11,19 @@ const manrope = Manrope({
 
 const lora = Lora({
   variable: "--font-lora",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
   subsets: ["latin"],
   display: "swap",
 });
@@ -29,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${lora.variable} h-full scroll-smooth antialiased`}
+      className={`${manrope.variable} ${lora.variable} ${inter.variable} ${poppins.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full font-sans text-stone-900">
         <AppProviders>{children}</AppProviders>

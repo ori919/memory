@@ -46,3 +46,8 @@ next-env.d.ts
 
 # Wrangler local state
 .wrangler
+
+# Remotion / video export
+memory-video/build/
+memory-video/out/
+memory-video/public/render/

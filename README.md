@@ -50,6 +50,19 @@ This project uses [OpenNext for Cloudflare](https://opennext.js.org/cloudflare/g
 
 The **Durable Object** API is a separate Worker: `npm run worker:deploy` (`cloudflare/wrangler.worker.toml`). Enable **Workers AI** for your account so the `AI` binding works in production.
 
+### GitHub → Cloudflare (CI)
+
+Pushes to **`main`** run [`.github/workflows/deploy-cloudflare.yml`](.github/workflows/deploy-cloudflare.yml): lint, OpenNext build, then `wrangler deploy` for the Next Worker and for the DO worker.
+
+Add these **repository secrets** (GitHub repo → **Settings** → **Secrets and variables** → **Actions**):
+
+| Secret | Where to get it |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) — template “Edit Cloudflare Workers” or custom with **Workers Scripts · Edit** (and Durable Objects if needed). |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Dashboard → **Workers & Pages** → copy **Account ID** from the right sidebar. |
+
+You can also run the workflow manually from the **Actions** tab (**Run workflow**).
+
 ## Verification
 
 Before a release or after changing Cloudflare config:

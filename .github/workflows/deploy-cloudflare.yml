@@ -1,0 +1,63 @@
+# Build OpenNext and deploy both Workers:
+# - `memory` — Next.js app (wrangler.jsonc)
+# - `memory-edge-api` — Durable Object + AI (cloudflare/wrangler.worker.toml)
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN — Create at https://dash.cloudflare.com/profile/api-tokens
+#     with permissions: Account · Workers Scripts · Edit, Workers KV / Durable Objects as needed.
+#   CLOUDFLARE_ACCOUNT_ID — Dashboard → Workers & Pages → right sidebar.
+
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Clean OpenNext output
+        run: npm run clean:opennext
+
+      - name: Build (OpenNext)
+        run: npm run build
+
+      - name: Deploy Next.js app (OpenNext Worker)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Deploy Durable Object API worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config cloudflare/wrangler.worker.toml
