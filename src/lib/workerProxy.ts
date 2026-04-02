@@ -1,8 +1,10 @@
+import { getCloudflareWorkerUrlFromEnv } from "@/lib/cloudflareEnv";
+
 /**
  * When CLOUDFLARE_WORKER_URL is set, Next API routes forward to the Durable Object Worker.
  */
 export function getCloudflareWorkerBase(): string | undefined {
-  const raw = process.env.CLOUDFLARE_WORKER_URL;
+  const raw = getCloudflareWorkerUrlFromEnv();
   if (!raw) return undefined;
   return raw.replace(/\/$/, "");
 }

@@ -28,7 +28,7 @@ When **`CLOUDFLARE_WORKER_URL`** is set (server-side), `src/app/api/chat` and `s
 
 | Variable | Purpose |
 | --- | --- |
-| `ELEVENLABS_API_KEY` | TTS + voice clone (`/api/speak`, `/api/clone-voice`) |
+| `ELEVENLABS_API_KEY` | TTS + voice clone (`/api/speak`, `/api/clone-voice`). On Workers, add as **Secret** in the `memory` Worker; the app reads it via `getCloudflareContext().env` because OpenNext does not always copy secrets into `process.env`. |
 | `CLOUDFLARE_WORKER_URL` | Deployed Worker origin for API proxy (no trailing slash) |
 | `NEXT_PUBLIC_WORKER_URL` | Optional: browser calls Worker directly for `/api/chat` / `/api/memory` |
 | `NEXT_PUBLIC_APP_URL` | Optional app URL for links |

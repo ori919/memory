@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
+import { getElevenLabsApiKey } from "@/lib/cloudflareEnv";
 
 export async function POST(req: NextRequest) {
-  const key = process.env.ELEVENLABS_API_KEY;
+  const key = getElevenLabsApiKey();
   if (!key) {
     return new Response(JSON.stringify({ error: "Missing ELEVENLABS_API_KEY" }), {
       status: 500,
