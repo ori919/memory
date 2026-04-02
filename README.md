@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - **`cloudflare/memory-agent.ts`** — `MemoryAgent extends DurableObject`: stores name, personality, and rolling chat history in `ctx.storage` (survives restarts).
 - **`cloudflare/worker.ts`** — routes `POST /api/chat` and `POST /api/memory` to `env.MEMORY_AGENT.idFromName(memoryId)` so **one DO instance per memory**.
 - **`cloudflare/agent-reply.ts`** — `generateReplyAsync` uses **Workers AI** (`@cf/meta/llama-3.1-8b-instruct`) when the `AI` binding is present; falls back to the same heuristics as `generateReply` on failure or for `__INIT__`.
-- Deploy Worker: `npm run worker:deploy` (uses `cloudflare/wrangler.worker.toml` with `[ai]` binding).
+- Deploy Worker: `npm run worker:deploy` (uses `cloudflare/wrangler.worker.toml` with `[ai]` binding). On **Workers Free**, Durable Objects must use a **`new_sqlite_classes`** migration (SQLite backend); KV `storage.get` / `put` in code is still supported ([docs](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/)).
 
 ### Next.js proxy
 

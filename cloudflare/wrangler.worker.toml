@@ -8,7 +8,8 @@ binding = "AI"
 [durable_objects]
 bindings = [{ name = "MEMORY_AGENT", class_name = "MemoryAgent" }]
 
-# Classic DO + ctx.storage (KV-style). For SQLite DOs, use new_sqlite_classes + sql API instead.
+# Workers Free plan requires SQLite-backed Durable Objects (new_sqlite_classes).
+# KV get/put on ctx.storage still works: https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/
 [[migrations]]
 tag = "v1"
-new_classes = ["MemoryAgent"]
+new_sqlite_classes = ["MemoryAgent"]
