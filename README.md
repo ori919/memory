@@ -1,6 +1,6 @@
 # Memory
 
-A quiet Next.js app for remembering someone you love — each **Memory** can be backed by a **Cloudflare Durable Object** agent (persistent personality + chat history on the edge). Voice uses ElevenLabs via `/api/speak` when configured; the UI keeps session copy in `sessionStorage`.
+A quiet Next.js app for remembering someone you love — each **Memory** can be backed by a **Cloudflare Durable Object** agent (persistent personality + chat history on the edge). Voice uses ElevenLabs via `/api/speak` when configured; the UI keeps session copy in `sessionStorage`. On the chat screen, **Speak** uses the browser Web Speech API for live speech-to-text (Chrome/Edge/Safari); language follows `navigator.language`.
 
 ## Getting started
 

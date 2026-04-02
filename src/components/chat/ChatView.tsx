@@ -8,6 +8,7 @@ import { generateReply } from "@/lib/generateReply";
 import { postMemory } from "@/lib/api";
 import { runOpeningExclusive } from "@/lib/openingGate";
 import type { ChatMessage } from "@/lib/types";
+import { useVoiceTranscription } from "@/hooks/useVoiceTranscription";
 import { playVoice, stopSpeaking } from "@/lib/voice";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -32,6 +33,14 @@ export function ChatView() {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  const {
+    supported: voiceSupported,
+    isListening,
+    micError,
+    start: startVoice,
+    stop: stopVoice,
+  } = useVoiceTranscription(setInput);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -104,6 +113,7 @@ export function ChatView() {
 
   const send = useCallback(async () => {
     if (!profile?.memoryId) return;
+    if (isListening) stopVoice();
     const text = input.trim();
     if (!text) return;
 
@@ -138,7 +148,7 @@ export function ChatView() {
       setTyping(false);
       setPendingId(null);
     }
-  }, [appendMessage, input, profile, updateMessage]);
+  }, [appendMessage, input, profile, updateMessage, isListening, stopVoice]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -245,32 +255,83 @@ export function ChatView() {
             </span>
             <span className="hidden sm:inline">Global · low-latency</span>
           </div>
-          <div className="flex gap-3">
-            <textarea
-              rows={1}
-              placeholder={`Say something to ${profile.name}…`}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={onKeyDown}
-              disabled={typing || pendingId !== null || !profile.memoryId}
-              className="max-h-40 min-h-[52px] flex-1 resize-none rounded-2xl border border-stone-200 bg-white px-4 py-3.5 text-[17px] leading-relaxed text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-stone-300 focus:ring-2 focus:ring-stone-200/60 disabled:opacity-50"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                stopSpeaking();
-                void send();
-              }}
-              disabled={
-                !input.trim() ||
-                typing ||
-                pendingId !== null ||
-                !profile.memoryId
-              }
-              className="shrink-0 self-end rounded-2xl bg-stone-900 px-6 py-3.5 text-sm font-medium text-white shadow-sm transition enabled:hover:bg-stone-800 enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Send
-            </button>
+          <div className="flex flex-col gap-2">
+            {micError ? (
+              <p className="text-xs text-amber-800/90" role="status">
+                {micError}
+              </p>
+            ) : null}
+            <div className="flex gap-3">
+              <textarea
+                rows={isListening ? 2 : 1}
+                placeholder={
+                  isListening
+                    ? "Listening… speak naturally. Tap the mic again to stop."
+                    : `Say something to ${profile.name}…`
+                }
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                disabled={typing || pendingId !== null || !profile.memoryId}
+                className={`max-h-40 min-h-[52px] flex-1 resize-none rounded-2xl border bg-white px-4 py-3.5 text-[17px] leading-relaxed text-stone-800 outline-none transition placeholder:text-stone-400 focus:ring-2 disabled:opacity-50 ${
+                  isListening
+                    ? "border-emerald-400/90 ring-2 ring-emerald-200/50 focus:border-emerald-400 focus:ring-emerald-200/50"
+                    : "border-stone-200 focus:border-stone-300 focus:ring-stone-200/60"
+                }`}
+              />
+              {voiceSupported ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isListening) {
+                      stopVoice();
+                    } else {
+                      stopSpeaking();
+                      startVoice(input);
+                    }
+                  }}
+                  disabled={typing || pendingId !== null || !profile.memoryId}
+                  aria-pressed={isListening}
+                  title={
+                    isListening ? "Stop voice input" : "Speak — live text"
+                  }
+                  className={`shrink-0 self-end flex h-[52px] w-[52px] items-center justify-center rounded-2xl border text-sm font-medium shadow-sm transition enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${
+                    isListening
+                      ? "border-emerald-400 bg-emerald-600 text-white shadow-[0_0_0_4px_rgba(16,185,129,0.2)] animate-pulse"
+                      : "border-stone-200 bg-white text-stone-700 enabled:hover:bg-stone-50"
+                  }`}
+                >
+                  <span className="sr-only">
+                    {isListening ? "Stop voice input" : "Start voice input"}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-6 w-6"
+                    aria-hidden
+                  >
+                    <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 1 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z" />
+                  </svg>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  stopSpeaking();
+                  void send();
+                }}
+                disabled={
+                  !input.trim() ||
+                  typing ||
+                  pendingId !== null ||
+                  !profile.memoryId
+                }
+                className="shrink-0 self-end rounded-2xl bg-stone-900 px-6 py-3.5 text-sm font-medium text-white shadow-sm transition enabled:hover:bg-stone-800 enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
       </div>

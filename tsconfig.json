@@ -25,6 +25,7 @@
   "include": [
     "next-env.d.ts",
     "cloudflare-bindings.d.ts",
+    "speech-recognition.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
