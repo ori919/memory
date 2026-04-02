@@ -33,6 +33,8 @@ When **`CLOUDFLARE_WORKER_URL`** is set (server-side), `src/app/api/chat` and `s
 | `NEXT_PUBLIC_WORKER_URL` | Optional: browser calls Worker directly for `/api/chat` / `/api/memory` |
 | `NEXT_PUBLIC_APP_URL` | Optional app URL for links |
 
+**Voice clone (`/api/clone-voice`):** [Instant Voice Cloning](https://elevenlabs.io/docs/api-reference/voices/add) may require a **paid** ElevenLabs plan or sufficient character quota; API errors are returned in the response `detail` field. Use a supported format (e.g. MP3, WAV, M4A) and a clear sample.
+
 ## Health
 
 - Next: `GET /api/health`

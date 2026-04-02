@@ -172,12 +172,14 @@ export function Onboarding() {
           body: fd,
         });
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(
-            typeof err === "object" && err && "error" in err
-              ? String((err as { error?: string }).error)
-              : "Voice clone failed"
-          );
+          const err = (await res.json().catch(() => ({}))) as {
+            error?: string;
+            detail?: string;
+          };
+          const msg =
+            [err.error, err.detail].filter(Boolean).join(" — ") ||
+            "Voice clone failed";
+          throw new Error(msg);
         }
         const data = (await res.json()) as { voiceId?: string };
         if (data.voiceId) voiceId = data.voiceId;
